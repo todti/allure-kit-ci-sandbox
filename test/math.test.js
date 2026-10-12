@@ -7,3 +7,4 @@ test("adds numbers", () => {
 test("fails on purpose, so the report is still published when tests fail", () => {
   expect(1 + 1).toBe(3);
 });
+// touch
