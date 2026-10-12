@@ -4,6 +4,5 @@ export default defineConfig({
   test: {
     setupFiles: ["allure-vitest/setup"],
     reporters: ["default", "allure-vitest/reporter"],
-    include: ["test/**/*.test.js"],
   },
 });
