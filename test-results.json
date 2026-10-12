@@ -1,0 +1,1 @@
+{"byId":{"dab2a88bb0381536c9ea6b65d298a5f1":{"id":"dab2a88bb0381536c9ea6b65d298a5f1","name":"adds numbers","duration":1,"status":"passed","environment":"default"},"f42fd0ef9148a141cb57d6ba96a90053":{"id":"f42fd0ef9148a141cb57d6ba96a90053","name":"fails on purpose, so the report is still published when tests fail","duration":7,"status":"failed","environment":"default"}}}
