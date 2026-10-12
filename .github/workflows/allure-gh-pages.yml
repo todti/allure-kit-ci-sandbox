@@ -1,0 +1,62 @@
+name: Allure Report (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: write
+
+concurrency:
+  group: allure-gh-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "20.x"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Restore Allure history
+        uses: actions/cache/restore@v4
+        with:
+          path: history.jsonl
+          key: allure-history-${{ github.run_id }}
+          restore-keys: allure-history-
+      - name: Run tests (produce allure-results)
+        run: npm test || echo "TESTS_FAILED=1" >> "$GITHUB_ENV"
+      - name: Generate Allure report
+        run: npx allure generate --output ./allure-report
+      - name: Save Allure history
+        if: ${{ !cancelled() && github.event_name != 'pull_request' }}
+        uses: actions/cache/save@v4
+        with:
+          path: history.jsonl
+          key: allure-history-${{ github.run_id }}
+      - name: Comment the test summary on the pull request
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        continue-on-error: true # a token from a fork has no write access
+        uses: allure-framework/allure-action@v0
+        with:
+          report-directory: ./allure-report
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        if: github.event_name != 'pull_request'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          publish_branch: gh-pages
+      - name: Fail the job if tests failed
+        if: env.TESTS_FAILED == '1'
+        run: exit 1
